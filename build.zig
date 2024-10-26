@@ -13,6 +13,9 @@ pub fn build(b: *std.Build) void {
         .target = b.standardTargetOptions(.{}),
         .optimize = b.standardOptimizeOption(.{}),
     });
+    exe.linkLibC();
+    exe.linkSystemLibrary("X11");
+    exe.linkSystemLibrary("Xtst");
     b.installArtifact(exe);
 
     const run_exe = b.addRunArtifact(exe);
