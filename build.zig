@@ -15,7 +15,7 @@ pub fn build(b: *std.Build) void {
     });
     exe.linkLibC();
     exe.linkSystemLibrary("X11");
-    exe.linkSystemLibrary("Xtst");
+    exe.linkSystemLibrary("xdo");
     b.installArtifact(exe);
 
     const run_exe = b.addRunArtifact(exe);
