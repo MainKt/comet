@@ -23,7 +23,17 @@ pub const Config = struct {
     } = .{},
     latch: []const u8 = "v",
 
-    pub fn loadOrCreate(allocator: std.mem.Allocator) !Config {
+    pub fn parseConfig(allocator: std.mem.Allocator, content: []const u8) !Config {
+        const json = std.json.parseFromSlice(Config, allocator, content, .{}) catch |err| {
+            std.debug.print("commet: error parsing config\n", .{});
+            return err;
+        };
+        defer json.deinit();
+
+        return json.value;
+    }
+
+    pub fn readConfigFile(allocator: std.mem.Allocator) ![]const u8 {
         const config_dir = try (if (std.posix.getenv("XDG_CONFIG_HOME")) |xdg_config_home|
             try std.fs.openDirAbsolute(xdg_config_home, .{})
         else blk: {
@@ -37,22 +47,18 @@ pub const Config = struct {
             .truncate = false,
         });
         defer config_file.close();
+
         try config_file.seekTo(0);
 
         const stats = try config_file.stat();
         if (stats.size == 0) {
             const default_config = Config{};
             const content = try std.json.stringifyAlloc(allocator, default_config, .{ .whitespace = .indent_2 });
+            defer allocator.free(content);
             try config_file.writeAll(content);
-            return default_config;
         }
 
         const content = try config_file.readToEndAlloc(allocator, 1024);
-        const json = std.json.parseFromSlice(Config, allocator, content, .{}) catch |err| {
-            std.debug.print("commet: error reading config\n", .{});
-            return err;
-        };
-        defer json.deinit();
-        return json.value;
+        return content;
     }
 };

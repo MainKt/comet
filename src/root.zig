@@ -6,7 +6,9 @@ const State = utils.State;
 const KeyBindings = utils.KeyBindings;
 
 pub const Comet = struct {
+    allocator: std.mem.Allocator,
     state: State,
+    config_content: []const u8,
 
     const Self = @This();
 
@@ -16,14 +18,21 @@ pub const Comet = struct {
             break :blk error.UnableToOpenDisplay;
         };
 
-        const config = try Config.loadOrCreate(allocator);
+        const config_content = try Config.readConfigFile(allocator);
+        const config = try Config.parseConfig(allocator, config_content);
+        std.debug.print("latch: {s}\n", .{config.latch});
         const state = try State.init(allocator, display, config);
 
-        return .{ .state = state };
+        return .{
+            .allocator = allocator,
+            .state = state,
+            .config_content = config_content,
+        };
     }
 
     pub fn deinit(self: *Self) void {
         self.state.deinit();
+        self.allocator.free(self.config_content);
     }
 
     pub fn run(self: *Self) void {
