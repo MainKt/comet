@@ -84,12 +84,12 @@ pub const Commet = struct {
                 .scroll_left => {
                     var window: x11.Window = undefined;
                     _ = x11.xdo_get_window_at_mouse(self.xdo, &window);
-                    _ = x11.xdo_click_window_multiple(self.xdo, window, 7, 1, 25);
+                    _ = x11.xdo_click_window_multiple(self.xdo, window, 6, 1, 25);
                 },
                 .scroll_right => {
                     var window: x11.Window = undefined;
                     _ = x11.xdo_get_window_at_mouse(self.xdo, &window);
-                    _ = x11.xdo_click_window_multiple(self.xdo, window, 6, 1, 25);
+                    _ = x11.xdo_click_window_multiple(self.xdo, window, 7, 1, 25);
                 },
                 .mouse_left => {
                     var window: x11.Window = undefined;
@@ -107,8 +107,8 @@ pub const Commet = struct {
                     _ = x11.xdo_click_window_multiple(self.xdo, window, 3, 1, 25);
                 },
                 .index => {},
-                .drag_toggle => {},
-                .drag_copy => {},
+                .latch => {},
+                .copy => {},
             }
         }
     }

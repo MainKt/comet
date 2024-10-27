@@ -1,7 +1,7 @@
 const std = @import("std");
 const x11 = @import("x11.zig");
 
-pub const Op = enum { quit, index, move_left, move_up, move_down, move_right, scroll_up, scroll_down, scroll_left, scroll_right, mouse_left, mouse_middle, mouse_right, drag_toggle, drag_copy };
+pub const Op = enum { quit, index, move_left, move_up, move_down, move_right, scroll_up, scroll_down, scroll_left, scroll_right, mouse_left, mouse_middle, mouse_right, latch, copy };
 
 pub const Config = struct {
     quit: []const u8 = "q",
@@ -15,18 +15,16 @@ pub const Config = struct {
     scroll: struct {
         up: []const u8 = "u",
         down: []const u8 = "d",
-        left: []const u8 = "zh",
-        right: []const u8 = "zl",
+        left: []const u8 = "w",
+        right: []const u8 = "e",
     } = .{},
     mouse: struct {
         left: []const u8 = "m",
         middle: []const u8 = "comma",
         right: []const u8 = "period",
     } = .{},
-    drag: struct {
-        toggle: []const u8 = "v",
-        copy: []const u8 = "y",
-    } = .{},
+    latch: []const u8 = "v",
+    copy: []const u8 = "y",
 
     pub fn loadOrCreate(allocator: std.mem.Allocator) !Config {
         const config_dir = try (if (std.posix.getenv("XDG_CONFIG_HOME")) |xdg_config_home|
@@ -35,7 +33,7 @@ pub const Config = struct {
             const home = try std.fs.openDirAbsolute(std.posix.getenv("HOME") orelse "~", .{});
             break :blk try home.makeOpenPath(".config", .{});
         })
-            .makeOpenPath("commet", .{});
+            .makeOpenPath("comet", .{});
 
         const config_file = try config_dir.createFile("config.json", .{
             .read = true,
@@ -81,8 +79,8 @@ pub const Config = struct {
         try map.put(getKeycode(display, try arena.dupeZ(u8, self.mouse.left)), .mouse_left);
         try map.put(getKeycode(display, try arena.dupeZ(u8, self.mouse.middle)), .mouse_middle);
         try map.put(getKeycode(display, try arena.dupeZ(u8, self.mouse.right)), .mouse_right);
-        try map.put(getKeycode(display, try arena.dupeZ(u8, self.drag.toggle)), .drag_toggle);
-        try map.put(getKeycode(display, try arena.dupeZ(u8, self.drag.copy)), .drag_copy);
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.latch)), .latch);
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.copy)), .copy);
 
         return map;
     }
