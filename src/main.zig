@@ -5,7 +5,7 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
 
-    const connection = try Commet.init(allocator);
+    var connection = try Commet.init(allocator);
     defer connection.deinit();
 
     connection.run();

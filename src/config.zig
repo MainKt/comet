@@ -1,12 +1,15 @@
 const std = @import("std");
+const x11 = @import("x11.zig");
+
+pub const Op = enum { quit, index, move_left, move_up, move_down, move_right, scroll_up, scroll_down, scroll_left, scroll_right, mouse_left, mouse_middle, mouse_right, drag_toggle, drag_copy };
 
 pub const Config = struct {
     quit: []const u8 = "q",
     index: []const u8 = "f",
     move: struct {
         left: []const u8 = "h",
-        up: []const u8 = "j",
-        down: []const u8 = "k",
+        up: []const u8 = "k",
+        down: []const u8 = "j",
         right: []const u8 = "l",
     } = .{},
     scroll: struct {
@@ -57,4 +60,34 @@ pub const Config = struct {
         defer json.deinit();
         return json.value;
     }
+
+    pub fn generateKeyCodeToOpMap(self: Config, allocator: std.mem.Allocator, display: *x11.Display) !std.AutoHashMap(x11.KeyCode, Op) {
+        var map = std.AutoHashMap(x11.KeyCode, Op).init(allocator);
+
+        var arenabuf = std.heap.ArenaAllocator.init(allocator);
+        defer arenabuf.deinit();
+        const arena = arenabuf.allocator();
+
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.quit)), .quit);
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.index)), .index);
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.move.left)), .move_left);
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.move.down)), .move_down);
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.move.up)), .move_up);
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.move.right)), .move_right);
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.scroll.up)), .scroll_up);
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.scroll.down)), .scroll_down);
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.scroll.left)), .scroll_left);
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.scroll.right)), .scroll_right);
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.mouse.left)), .mouse_left);
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.mouse.middle)), .mouse_middle);
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.mouse.right)), .mouse_right);
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.drag.toggle)), .drag_toggle);
+        try map.put(getKeycode(display, try arena.dupeZ(u8, self.drag.copy)), .drag_copy);
+
+        return map;
+    }
 };
+
+fn getKeycode(display: *x11.Display, key: [:0]const u8) x11.KeyCode {
+    return x11.XKeysymToKeycode(display, x11.XStringToKeysym(key));
+}
