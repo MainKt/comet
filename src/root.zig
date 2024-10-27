@@ -20,7 +20,6 @@ pub const Comet = struct {
 
         const config_content = try Config.readConfigFile(allocator);
         const config = try Config.parseConfig(allocator, config_content);
-        std.debug.print("latch: {s}\n", .{config.latch});
         const state = try State.init(allocator, display, config);
 
         return .{

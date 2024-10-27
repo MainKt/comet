@@ -88,6 +88,7 @@ pub const State = struct {
                     const x_key = event.xkey.keycode;
 
                     if (event.xkey.type == x11.KeyRelease) continue;
+                    if (x_key == getKeycode(self.display, "BackSpace")) break;
                     if (x_key == self.key_bindings.quit) return;
 
                     if (x_key >= startIndex and x_key <= endIndex) {
