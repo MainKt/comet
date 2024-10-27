@@ -36,7 +36,6 @@ pub const State = struct {
         };
 
         _ = x11.xdo_move_mouse_relative(self.xdo, offset[0], offset[1]);
-        std.debug.print("acceleration: {d}\n", .{self.acceleration});
     }
 
     fn mouse_op(
@@ -87,7 +86,7 @@ pub const State = struct {
             self.mouse_op(.scroll_right);
         } else if (key == keys.latch) {
             self.toggle_latch();
-        } else if (key == keys.copy) {} else if (key == keys.index) {} else {}
+        } else if (key == keys.index) {} else {}
 
         self.last_key = @intCast(key);
     }
@@ -118,7 +117,6 @@ pub const KeyBindings = struct {
         right: x11.KeyCode,
     },
     latch: x11.KeyCode,
-    copy: x11.KeyCode,
 
     pub fn init(allocator: std.mem.Allocator, display: *x11.Display, config: Config) !KeyBindings {
         var arenabuf = std.heap.ArenaAllocator.init(allocator);
@@ -146,7 +144,6 @@ pub const KeyBindings = struct {
                 .right = getKeycode(display, try arena.dupeZ(u8, config.mouse.right)),
             },
             .latch = getKeycode(display, try arena.dupeZ(u8, config.latch)),
-            .copy = getKeycode(display, try arena.dupeZ(u8, config.copy)),
         };
     }
 };

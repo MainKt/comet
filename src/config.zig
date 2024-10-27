@@ -22,7 +22,6 @@ pub const Config = struct {
         right: []const u8 = "period",
     } = .{},
     latch: []const u8 = "v",
-    copy: []const u8 = "y",
 
     pub fn loadOrCreate(allocator: std.mem.Allocator) !Config {
         const config_dir = try (if (std.posix.getenv("XDG_CONFIG_HOME")) |xdg_config_home|
