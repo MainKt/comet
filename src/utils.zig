@@ -91,8 +91,8 @@ pub const State = struct {
                     if (x_key == self.key_bindings.quit) return;
 
                     if (x_key >= startIndex and x_key <= endIndex) {
-                        const x_index = (x_key - 9) % 10;
-                        const y_index = (y_key - 9) % 10;
+                        const x_index = (x_key - 9) % 11;
+                        const y_index = (y_key - 9) % 11;
 
                         var width: c_uint = undefined;
                         var height: c_uint = undefined;
@@ -100,8 +100,8 @@ pub const State = struct {
 
                         _ = x11.xdo_move_mouse(
                             self.xdo,
-                            @intCast(width / 11 * (x_index + 1)),
-                            @intCast(height / 11 * (y_index + 1)),
+                            @intCast(width / 11 * x_index),
+                            @intCast(height / 11 * y_index),
                             0,
                         );
 
