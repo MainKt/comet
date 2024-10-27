@@ -15,8 +15,19 @@ pub const State = struct {
 
     const Self = @This();
 
-    pub fn init(display: *x11.Display, xdo: *x11.xdo, key_bindings: KeyBindings) State {
+    pub fn init(allocator: std.mem.Allocator, display: *x11.Display, config: Config) !State {
+        const key_bindings = try KeyBindings.init(allocator, display, config);
+
+        const xdo = x11.xdo_new_with_opened_display(display, null, x11.True) orelse return blk: {
+            std.debug.print("comet: failed to create xdo instance", .{});
+            break :blk error.UnableToCreateXdoInstance;
+        };
+
         return .{ .display = display, .key_bindings = key_bindings, .xdo = xdo };
+    }
+
+    pub fn deinit(self: *Self) void {
+        _ = x11.xdo_free(self.xdo);
     }
 
     fn move(self: *Self, direction: enum { up, down, left, right }) void {
