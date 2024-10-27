@@ -4,6 +4,7 @@ const Config = @import("config.zig").Config;
 const Op = @import("config.zig").Op;
 
 pub const State = struct {
+    display: *x11.Display,
     key_bindings: KeyBindings,
     last_key: x11.KeyCode = 0,
     speed: c_int = 15,
@@ -14,8 +15,8 @@ pub const State = struct {
 
     const Self = @This();
 
-    pub fn init(xdo: *x11.xdo, key_bindings: KeyBindings) State {
-        return .{ .key_bindings = key_bindings, .xdo = xdo };
+    pub fn init(display: *x11.Display, xdo: *x11.xdo, key_bindings: KeyBindings) State {
+        return .{ .display = display, .key_bindings = key_bindings, .xdo = xdo };
     }
 
     fn move(self: *Self, direction: enum { up, down, left, right }) void {
@@ -58,6 +59,48 @@ pub const State = struct {
         self.latch = !self.latch;
     }
 
+    fn index(self: *Self) void {
+        const startIndex = getKeycode(self.display, "1");
+        const endIndex = getKeycode(self.display, "0");
+
+        var event: x11.XEvent = undefined;
+        while (true) {
+            _ = x11.XNextEvent(self.display, &event);
+            const y_key = event.xkey.keycode;
+
+            if (event.xkey.type == x11.KeyRelease) continue;
+            if (y_key == self.key_bindings.quit) return;
+
+            if (y_key >= startIndex and y_key <= endIndex) {
+                while (true) {
+                    _ = x11.XNextEvent(self.display, &event);
+                    const x_key = event.xkey.keycode;
+
+                    if (event.xkey.type == x11.KeyRelease) continue;
+                    if (x_key == self.key_bindings.quit) return;
+
+                    if (x_key >= startIndex and x_key <= endIndex) {
+                        const x_index = (x_key - 9) % 10;
+                        const y_index = (y_key - 9) % 10;
+
+                        var width: c_uint = undefined;
+                        var height: c_uint = undefined;
+                        _ = x11.xdo_get_viewport_dimensions(self.xdo, &width, &height, 0);
+
+                        _ = x11.xdo_move_mouse(
+                            self.xdo,
+                            @intCast(width / 11 * (x_index + 1)),
+                            @intCast(height / 11 * (y_index + 1)),
+                            0,
+                        );
+
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
     pub fn process_key(self: *Self, event: x11.XKeyEvent) void {
         const key = event.keycode;
         const keys = self.key_bindings;
@@ -86,7 +129,9 @@ pub const State = struct {
             self.mouse_op(.scroll_right);
         } else if (key == keys.latch) {
             self.toggle_latch();
-        } else if (key == keys.index) {} else {}
+        } else if (key == keys.index) {
+            self.index();
+        }
 
         self.last_key = @intCast(key);
     }

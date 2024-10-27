@@ -27,7 +27,7 @@ pub const Commet = struct {
 
         const config = try Config.loadOrCreate(allocator);
 
-        const state = State.init(xdo, try KeyBindings.init(allocator, display, config));
+        const state = State.init(display, xdo, try KeyBindings.init(allocator, display, config));
 
         return .{
             .display = display,
